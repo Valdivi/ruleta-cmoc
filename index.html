@@ -297,22 +297,27 @@
             }
         }
 
-    /* PARA MOBILE */
+   /* PARA MOBILE */
 @media (max-width: 768px) {
     .container {
-        padding: 10px 10px;
-        gap: 6px;
+        padding: 10px;
+        gap: 8px;
         justify-content: center;
+        overflow: hidden;
+    }
+
+    .logo-section {
+        flex-shrink: 0;
     }
 
     .logo-section img {
-        max-width: 220px;
+        max-width: 180px;
     }
 
     .wheel-container {
-        width: 360px;
-        height: 360px;
-        margin-top: 0px;
+        width: 320px;
+        height: 320px;
+        margin-top: 0;
     }
 
     .button-spin {
@@ -321,12 +326,13 @@
     }
 
     .wheel-wrapper {
-        gap: 12px;
+        gap: 10px;
+        flex: 0;
     }
 
     .pointer {
-        width: 65px;
-        height: 80px;
+        width: 58px;
+        height: 72px;
     }
 }
     </style>
@@ -478,19 +484,24 @@
         document.addEventListener('click', showGame);
 
         function showGame() {
-            if (isGameActive) return;
+    if (isGameActive) return;
 
-            isGameActive = true;
-            screensaver.classList.add('hidden');
-            gameContainer.classList.add('active');
-            soundBtn.classList.add('hidden');
-            
-            // Resetear inactividad
-            resetInactivityTimer();
+    isGameActive = true;
+    screensaver.classList.add('hidden');
+    gameContainer.classList.add('active');
+    soundBtn.classList.add('hidden');
 
-            // Removers el listener de clic para que no interfiera
-            document.removeEventListener('click', showGame);
-        }
+    // Silenciar video al entrar a la ruleta
+    videoPlayer.muted = true;
+    videoPlayer.pause();
+    isSoundEnabled = false;
+    soundBtn.classList.remove('unmuted');
+    soundBtn.classList.add('muted');
+    soundBtn.textContent = '🔊';
+
+    resetInactivityTimer();
+    document.removeEventListener('click', showGame);
+}
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimeout);
