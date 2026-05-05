@@ -301,9 +301,9 @@
 @media (max-width: 768px) {
     .container {
         padding: 10px;
-        gap: 8px;
+        gap: 10px;
         justify-content: center;
-        padding-top: 40px;
+        padding-top: 60px;
         overflow: hidden;
     }
 
@@ -513,18 +513,30 @@
         }
 
         function hideGame() {
-            isGameActive = false;
-            gameContainer.classList.remove('active');
-            screensaver.classList.remove('hidden');
-            soundBtn.classList.remove('hidden');
-            
-            // NO resetear a 0, continuar desde donde estaba
-            saveVideoIndex();
-            playVideos();
+    isGameActive = false;
+    gameContainer.classList.remove('active');
+    screensaver.classList.remove('hidden');
+    soundBtn.classList.remove('hidden');
 
-            // Volver a permitir clic para mostrar la ruleta
-            document.addEventListener('click', showGame);
-        }
+    // Reactivar sonido al volver al screensaver
+    isSoundEnabled = true;
+    soundBtn.classList.remove('muted');
+    soundBtn.classList.add('unmuted');
+    soundBtn.textContent = '🔉';
+
+    saveVideoIndex();
+    playVideos();
+
+    // Intentar reproducir con sonido
+    videoPlayer.muted = false;
+    videoPlayer.play().catch(() => {
+        // Si el navegador bloquea, reproducir sin sonido
+        videoPlayer.muted = true;
+        videoPlayer.play();
+    });
+
+    document.addEventListener('click', showGame);
+}
 
         // Detectar actividad mientras la ruleta está activa
         spinBtn.addEventListener('click', () => {
