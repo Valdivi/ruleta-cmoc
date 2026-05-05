@@ -1,257 +1,568 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta CMOC - ODIN Mining</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-    font-family: Arial, sans-serif;
-    background: url('./fondo_al_60_por_opacidad_.jpg') center/cover no-repeat fixed;
-    background-attachment: fixed;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-.container {
-    max-width: 900px;
-    width: 100%;
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
+        body {
+            font-family: Arial, sans-serif;
+            background: black;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            position: relative;
+        }
 
-.header {
-    text-align: center;
-    margin-bottom: 40px;
-}
+        /* BOTÓN DE MODO PRESENTACIÓN */
+        .presentation-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s;
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-.header img {
-    max-width: 300px;
-    height: auto;
-    margin-bottom: 20px;
-}
+        .presentation-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
 
-.header h1 {
-    color: #4B0082;
-    font-size: 32px;
-    margin-bottom: 10px;
-}
+        .presentation-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-.header p {
-    color: #1B7A5A;
-    font-size: 18px;
-}
+        /* SCREENSAVER CON VIDEOS */
+        .screensaver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
 
-.wheel-wrapper {
-    display: flex;
-    justify-content: center;
-    margin: 40px 0;
-}
+        .screensaver.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-.wheel-container {
-    position: relative;
-    width: 600px;
-    height: 600px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .screensaver video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-.wheel {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
+        /* BOTÓN DE SONIDO - GRIS SIN FONDO */
+        .sound-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 150;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #999;
+            transition: all 0.3s;
+            pointer-events: auto;
+        }
 
-.segments {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+        .sound-btn:hover {
+            color: #666;
+            transform: scale(1.15);
+        }
 
-.segment {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .sound-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-.segment img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    position: absolute;
-}
+        .sound-btn.muted {
+            color: #888;
+        }
 
-.segment:nth-child(1) { transform: rotate(0deg); }
-.segment:nth-child(1) img { transform: rotate(0deg); }
+        .sound-btn.unmuted {
+            color: #4B0082;
+        }
 
-.segment:nth-child(2) { transform: rotate(45deg); }
-.segment:nth-child(2) img { transform: rotate(-45deg); }
+        /* CONTENEDOR DE LA RULETA */
+        .game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
 
-.segment:nth-child(3) { transform: rotate(90deg); }
-.segment:nth-child(3) img { transform: rotate(-90deg); }
+        .game-container.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-.segment:nth-child(4) { transform: rotate(135deg); }
-.segment:nth-child(4) img { transform: rotate(-135deg); }
+        .game-container::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('http://127.0.0.1:8001/fondo.jpg') center/cover no-repeat;
+            background-attachment: fixed;
+            opacity: 0.6;
+            z-index: -1;
+        }
 
-.segment:nth-child(5) { transform: rotate(180deg); }
-.segment:nth-child(5) img { transform: rotate(-180deg); }
+        .container {
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            background: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
 
-.segment:nth-child(6) { transform: rotate(225deg); }
-.segment:nth-child(6) img { transform: rotate(-225deg); }
+        .logo-section {
+            text-align: center;
+            width: 100%;
+        }
 
-.segment:nth-child(7) { transform: rotate(270deg); }
-.segment:nth-child(7) img { transform: rotate(-270deg); }
+        .logo-section img {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+        }
 
-.segment:nth-child(8) { transform: rotate(315deg); }
-.segment:nth-child(8) img { transform: rotate(-315deg); }
+        .wheel-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            flex: 1;
+            justify-content: center;
+        }
 
-.rim {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    pointer-events: none;
-}
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.rim img {
-    width: 100%;
-    height: 100%;
-}
+        .wheel {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
 
-.pointer {
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 80px;
-    z-index: 20;
-    pointer-events: none;
-}
+        .wheel img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
 
-.pointer img {
-    width: 100%;
-    height: 100%;
-}
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 75px;
+            z-index: 20;
+            pointer-events: none;
+        }
 
-.center-deco {
-    position: absolute;
-    width: 180px;
-    height: 180px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 15;
-    pointer-events: none;
-}
+        .pointer img {
+            width: 100%;
+            height: 100%;
+        }
 
-.center-deco img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-}
+        .button-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
 
-.button-spin {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 140px;
-    height: 140px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    z-index: 25;
-    padding: 0;
-    transition: transform 0.2s;
-}
+        .button-spin {
+            width: 130px;
+            height: 130px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
 
-.button-spin img {
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
+        .button-spin img {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
 
-.button-spin:hover:not(:disabled) img {
-    transform: scale(1.1);
-    filter: brightness(1.1);
-}
+        .button-spin:hover:not(:disabled) img {
+            transform: scale(1.1);
+            filter: brightness(1.1);
+        }
 
-.button-spin:active:not(:disabled) img {
-    transform: scale(0.95);
-}
+        .button-spin:active:not(:disabled) img {
+            transform: scale(0.95);
+        }
 
-.button-spin:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
+        .button-spin:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
 
-.result {
-    text-align: center;
-    margin: 40px 0;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
+        /* MODO PRESENTACIÓN - FULLSCREEN */
+        body.fullscreen {
+            width: 100vw;
+            height: 100vh;
+        }
 
-.result-title {
-    color: #1B7A5A;
-    font-size: 32px;
-    margin-bottom: 10px;
-}
+        body.fullscreen .presentation-btn {
+            display: none;
+        }
 
-.result-prize {
-    color: #4B0082;
-    font-size: 24px;
-}
+        /* PARA DESKTOP */
+        @media (min-width: 769px) {
+            .logo-section img {
+                max-width: 380px;
+            }
 
-.info-section {
-    background: #f5f5f5;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 30px;
-    text-align: center;
-}
+            .wheel-container {
+                width: 380px;
+                height: 380px;
+            }
 
-.info-section p {
-    color: #666;
-    font-size: 16px;
-    line-height: 1.6;
-}
+            .button-spin {
+                width: 160px;
+                height: 160px;
+            }
+        }
 
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-    }
+        /* PARA MOBILE - 20% MÁS GRANDE */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 10px;
+                gap: 10px;
+            }
 
-    .wheel-container {
-        width: 400px;
-        height: 400px;
-    }
+            .logo-section img {
+                max-width: 336px;
+            }
 
-    .header h1 {
-        font-size: 24px;
-    }
+            .wheel-container {
+                width: 420px;
+                height: 420px;
+                margin-top: 40px;
+            }
 
-    .button-spin {
-        width: 100px;
-        height: 100px;
-        bottom: 30px;
-    }
-}
+            .button-spin {
+                width: 168px;
+                height: 168px;
+            }
+
+            .wheel-wrapper {
+                gap: 40px;
+            }
+
+            .pointer {
+                width: 72px;
+                height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BOTÓN DE MODO PRESENTACIÓN -->
+    <button class="presentation-btn" id="presentationBtn" title="Modo Presentación">
+        ⛶
+    </button>
+
+    <!-- BOTÓN DE SONIDO -->
+    <button class="sound-btn muted" id="soundBtn" title="Activar Sonido">
+        🔊
+    </button>
+
+    <!-- SCREENSAVER CON VIDEOS -->
+    <div class="screensaver" id="screensaver">
+        <video id="videoPlayer" autoplay muted playsinline>
+            <source src="" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- JUEGO DE LA RULETA -->
+    <div class="game-container" id="gameContainer">
+        <div class="container">
+            <div class="logo-section">
+                <img src="prueba_de_color_odin_CMOC-13.png" alt="CMOC ODIN">
+            </div>
+
+            <div class="wheel-wrapper">
+                <div class="wheel-container">
+                    <div class="wheel" id="wheel">
+                        <img src="ruleta.png" alt="Ruleta">
+                    </div>
+
+                    <div class="pointer">
+                        <img src="puntero.png" alt="Puntero">
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button class="button-spin" id="spinBtn" title="Haz clic para girar la ruleta">
+                        <img src="boton_de_juego.png" alt="GIRAR">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // LISTA DE VIDEOS
+        const videos = [
+    'http://127.0.0.1:8001/IMG_1074.mp4',
+    'http://127.0.0.1:8001/IMG_2990.mp4',
+    'http://127.0.0.1:8001/QNPN7851.mp4',
+    'http://127.0.0.1:8001/XLWX2369.mp4'
+];
+
+        // Cargar el índice guardado del localStorage
+        let currentVideoIndex = parseInt(localStorage.getItem('videoIndex') || '0');
+        let isGameActive = false;
+        let inactivityTimeout;
+        let isSoundEnabled = false;
+        const INACTIVITY_TIME = 3 * 60 * 1000; // 3 minutos en milisegundos
+
+        const screensaver = document.getElementById('screensaver');
+        const gameContainer = document.getElementById('gameContainer');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const spinBtn = document.getElementById('spinBtn');
+        const presentationBtn = document.getElementById('presentationBtn');
+        const soundBtn = document.getElementById('soundBtn');
+
+        // MODO PRESENTACIÓN - FULLSCREEN
+        presentationBtn.addEventListener('click', togglePresentation);
+
+        function togglePresentation() {
+            const elem = document.documentElement;
+            
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+                document.body.classList.add('fullscreen');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                document.body.classList.remove('fullscreen');
+            }
+        }
+
+        // Salir del fullscreen con ESC
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen');
+            }
+        });
+
+        // CONTROL DE SONIDO
+        soundBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // No activar el juego al hacer clic aquí
+            
+            isSoundEnabled = !isSoundEnabled;
+            videoPlayer.muted = !isSoundEnabled;
+            
+            if (isSoundEnabled) {
+                soundBtn.classList.remove('muted');
+                soundBtn.classList.add('unmuted');
+                soundBtn.textContent = '🔉';
+            } else {
+                soundBtn.classList.remove('unmuted');
+                soundBtn.classList.add('muted');
+                soundBtn.textContent = '🔊';
+            }
+        });
+
+        // Guardar índice cada vez que cambia
+        function saveVideoIndex() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            localStorage.setItem('videoIndex', currentVideoIndex);
+        }
+
+        // Reproducir videos en loop
+        function playVideos() {
+            videoPlayer.src = videos[currentVideoIndex];
+            videoPlayer.muted = !isSoundEnabled; // Aplicar estado del sonido
+            videoPlayer.play();
+        }
+
+        // Al terminar un video, pasar al siguiente
+        videoPlayer.addEventListener('ended', () => {
+            saveVideoIndex();
+            playVideos();
+        });
+
+        // Mostrar ruleta al hacer clic
+        document.addEventListener('click', showGame);
+
+        function showGame() {
+            if (isGameActive) return;
+
+            isGameActive = true;
+            screensaver.classList.add('hidden');
+            gameContainer.classList.add('active');
+            soundBtn.classList.add('hidden');
+            
+            // Resetear inactividad
+            resetInactivityTimer();
+
+            // Removers el listener de clic para que no interfiera
+            document.removeEventListener('click', showGame);
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimeout);
+            
+            inactivityTimeout = setTimeout(() => {
+                hideGame();
+            }, INACTIVITY_TIME);
+        }
+
+        function hideGame() {
+            isGameActive = false;
+            gameContainer.classList.remove('active');
+            screensaver.classList.remove('hidden');
+            soundBtn.classList.remove('hidden');
+            
+            // NO resetear a 0, continuar desde donde estaba
+            saveVideoIndex();
+            playVideos();
+
+            // Volver a permitir clic para mostrar la ruleta
+            document.addEventListener('click', showGame);
+        }
+
+        // Detectar actividad mientras la ruleta está activa
+        spinBtn.addEventListener('click', () => {
+            if (isGameActive) {
+                resetInactivityTimer();
+            }
+        });
+
+        // Iniciar con los videos
+        playVideos();
+
+        // LÓGICA DE LA RULETA
+        const premios = [
+            'RESPONDE UNA PREGUNTA Y GANA',
+            'PREMIO ESPECIAL',
+            'SIGUE PARTICIPANDO',
+            'RESPONDE UNA PREGUNTA',
+            'PRESENTA UN DESAFÍO APRENDE',
+            'RESPONDE UNA PREGUNTA APRENDE',
+            'PRESENTACIÓN ESPECIAL APRENDE',
+            'SIGUE PARTICIPANDO'
+        ];
+
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        const wheel = document.getElementById('wheel');
+        const wheelImg = wheel.querySelector('img');
+
+        spinBtn.addEventListener('click', spinWheel);
+
+        function spinWheel() {
+            if (isSpinning || !isGameActive) return;
+
+            isSpinning = true;
+            spinBtn.disabled = true;
+            resetInactivityTimer();
+
+            const randomSpin = Math.floor(Math.random() * 2880) + 1080;
+            const totalRotation = currentRotation + randomSpin;
+
+            wheelImg.style.transform = `rotate(${totalRotation}deg)`;
+
+            currentRotation = totalRotation;
+
+            setTimeout(() => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                resetInactivityTimer();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
